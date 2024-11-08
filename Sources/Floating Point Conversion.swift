@@ -11,6 +11,8 @@ import Foundation
 #endif
 
 extension BigUInt {
+    public static var initDecimalWithString = true
+
     public init?<T: BinaryFloatingPoint>(exactly source: T) {
         guard source.isFinite else { return nil }
         guard !source.isZero else { self = 0; return }
@@ -50,15 +52,19 @@ extension BigUInt {
         assert(integer.floatingPointClass == .positiveNormal)
 
         // keeping around in case the `Decimal._mantissa` property gets deprecated in the future.
-//        let significand = BigUInt("\(integer.significand)")!
-        let significand = {
-            var start = BigUInt(0)
-            for (place, value) in integer.significand.mantissaParts.enumerated() {
-                guard value > 0 else { continue }
-                start += (1 << (place * 16)) * BigUInt(value)
-            }
-            return start
-        }()
+        let significand: BigUInt
+        if Self.initDecimalWithString {
+            significand = BigUInt("\(integer.significand)")!
+        } else {
+            significand = {
+                var start = BigUInt(0)
+                for (place, value) in integer.significand.mantissaParts.enumerated() {
+                    guard value > 0 else { continue }
+                    start += (1 << (place * 16)) * BigUInt(value)
+                }
+                return start
+            }()
+        }
         let exponent = BigUInt(10).power(integer.exponent)
 
         self = significand * exponent

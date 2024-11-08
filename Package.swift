@@ -12,7 +12,7 @@ import PackageDescription
 let package = Package(
     name: "BigInt",
     platforms: [
-        .macOS(.v10_13),
+        .macOS(.v13),
         .iOS(.v12),
         .tvOS(.v12),
         .watchOS(.v4),
@@ -20,10 +20,22 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "BigInt", targets: ["BigInt"])
-    ], 
+        .library(name: "BigInt", targets: ["BigInt"]),
+        .executable(name: "Foo", targets: ["Foo"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/mredig/Benchy.git", .upToNextMajor(from: "0.0.0"))
+    ],
     targets: [
         .target(name: "BigInt", path: "Sources"),
-        .testTarget(name: "BigIntTests", dependencies: ["BigInt"], path: "Tests")
+        .testTarget(name: "BigIntTests", dependencies: ["BigInt"], path: "Tests"),
+        .executableTarget(
+            name: "Foo",
+            dependencies: [
+                .product(name: "BenchyLib", package: "benchy"),
+                "BigInt"
+            ],
+            path: "Foo"
+        )
     ]
 )
